@@ -4,238 +4,261 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LUEN | Customer Order Center</title>
-    <!-- 引入字体增强质感 -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- 引入高质感字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { 
             --accent: #f9b84a; 
             --bg: #1a0b2e; 
-            --card: rgba(255, 241, 208, 0.05);
-            --border: rgba(249, 184, 74, 0.3);
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --border: rgba(249, 184, 74, 0.15);
         }
 
         body { 
-            background: linear-gradient(145deg, #1a0b2e 0%, #2d1b4e 100%);
+            background: linear-gradient(145deg, #1a0b2e 0%, #2d1b4e 100%); 
             color: #fff; 
             font-family: 'Inter', -apple-system, sans-serif; 
             margin: 0; 
-            padding: 20px; 
+            padding: 15px; 
             display: flex; 
             justify-content: center; 
             min-height: 100vh; 
         }
 
-        .container { width: 100%; max-width: 500px; padding-bottom: 50px; }
-        
-        header { text-align: center; margin-bottom: 40px; }
-        header h1 { color: var(--accent); font-size: 1.6rem; letter-spacing: 3px; margin-bottom: 5px; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        header p { color: #888; font-size: 0.8rem; letter-spacing: 1px; }
+        .container { width: 100%; max-width: 480px; }
 
-        /* 搜索框设计 */
-        .search-box { 
-            background: var(--card); 
-            padding: 35px 25px; 
+        /* 搜索界面样式 */
+        .search-area { 
+            background: rgba(255,255,255,0.05); 
+            padding: 45px 25px; 
             border-radius: 32px; 
-            border: 1px solid var(--border); 
             text-align: center; 
-            backdrop-filter: blur(10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            margin-top: 60px; 
+            border: 1px solid var(--border); 
+            backdrop-filter: blur(15px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
         
-        .search-box p { font-size: 0.9rem; color: #ccc; margin-bottom: 20px; }
+        .search-area h1 { color: var(--accent); letter-spacing: 4px; margin-bottom: 5px; font-size: 1.6rem; text-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .search-area p { color: #888; font-size: 0.8rem; margin-bottom: 30px; }
         
         input { 
             width: 85%; 
-            padding: 15px; 
+            padding: 16px; 
             border-radius: 16px; 
             border: 1px solid #444; 
             background: rgba(0,0,0,0.6); 
             color: var(--accent); 
-            font-size: 1.1rem; 
+            font-size: 1.2rem; 
             text-align: center; 
-            margin-bottom: 15px;
+            margin-bottom: 20px; 
             outline: none;
             transition: border 0.3s;
         }
         input:focus { border-color: var(--accent); }
 
-        .btn-search { 
+        .btn { 
             background: radial-gradient(circle at 30% 30%, #f9b84a, #c46f1e); 
             color: #2d1407; 
             border: none; 
-            padding: 15px 40px; 
+            padding: 16px; 
             border-radius: 50px; 
             font-weight: 700; 
             cursor: pointer; 
-            width: 85%; 
-            letter-spacing: 2px;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.3);
+            width: 90%; 
+            letter-spacing: 2px; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
             transition: transform 0.1s;
         }
-        .btn-search:active { transform: translateY(3px); }
+        .btn:active { transform: translateY(4px); }
 
-        /* 时间轴设计 */
+        /* 追踪详情界面样式 */
         #trackingView { display: none; margin-top: 20px; }
+        .header-title { color: var(--accent); text-align: center; letter-spacing: 3px; font-size: 1.3rem; margin-bottom: 40px; }
         
-        .back-btn { 
-            background: none; 
-            border: 1px solid var(--border); 
-            color: var(--accent); 
-            padding: 8px 18px; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            font-size: 0.8rem; 
-            margin-bottom: 25px; 
-        }
-
-        .step { 
-            position: relative; 
-            padding-left: 35px; 
-            margin-bottom: 45px; 
-            border-left: 2px solid rgba(249, 184, 74, 0.2); 
-        }
-        
-        .step::before { 
+        .timeline { position: relative; padding-left: 20px; }
+        .timeline::before { 
             content: ''; 
             position: absolute; 
-            left: -10px; 
-            top: 0; 
-            width: 18px; 
-            height: 18px; 
+            left: 0; 
+            top: 5px; 
+            bottom: 5px; 
+            width: 1px; 
+            background: rgba(249,184,74,0.2); 
+        }
+        
+        /* 里程碑卡片设计 */
+        .milestone-card { 
+            background: var(--card-bg); 
+            border: 1px solid var(--border); 
+            border-radius: 24px; 
+            padding: 25px; 
+            margin-bottom: 40px; 
+            position: relative; 
+            backdrop-filter: blur(5px);
+        }
+        
+        /* 左侧时间轴圆点 */
+        .milestone-card::before { 
+            content: ''; 
+            position: absolute; 
+            left: -27px; 
+            top: 28px; 
+            width: 14px; 
+            height: 14px; 
             border-radius: 50%; 
-            background: #2d1b4e; 
-            border: 2px solid var(--accent);
-            box-shadow: 0 0 10px var(--accent);
-            z-index: 2;
+            background: #333; 
+            border: 2px solid var(--bg); 
+            z-index: 2; 
+        }
+        .milestone-card.reached::before { 
+            background: var(--accent); 
+            box-shadow: 0 0 15px var(--accent); 
+            border-color: var(--bg);
         }
 
-        .step-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .step-title { font-weight: 700; color: var(--accent); font-size: 1.05rem; }
-        .step-status { font-size: 0.7rem; background: rgba(249,184,74,0.1); padding: 2px 8px; border-radius: 5px; border: 1px solid var(--border); color: var(--accent); }
-        
-        .step-time { font-size: 0.75rem; color: #888; margin-bottom: 12px; font-family: monospace; }
-        .step-desc { font-size: 0.9rem; color: #d1d1d1; line-height: 1.6; margin-bottom: 15px; }
+        /* 日期标签 - 核心强化显示 */
+        .date-badge { 
+            display: inline-block; 
+            background: var(--accent); 
+            color: #2d1407; 
+            font-weight: 700; 
+            font-size: 0.75rem; 
+            padding: 4px 14px; 
+            border-radius: 8px; 
+            margin-bottom: 15px; 
+            text-transform: uppercase;
+        }
 
-        /* 图片展示区 */
-        .step-images { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 15px; }
-        .step-img { 
+        .m-title { font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .m-status { font-size: 0.65rem; color: var(--accent); opacity: 0.8; border: 1px solid var(--border); padding: 2px 8px; border-radius: 5px; }
+        
+        .m-desc { font-size: 0.9rem; color: #bbb; line-height: 1.6; margin-bottom: 20px; }
+        
+        /* 图片网格展示 */
+        .img-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .img-item { 
             width: 100%; 
-            height: 140px; 
+            height: 130px; 
             object-fit: cover; 
             border-radius: 12px; 
             border: 1px solid rgba(255,255,255,0.1); 
             cursor: pointer;
-            transition: transform 0.3s;
+            transition: transform 0.2s, border-color 0.2s;
         }
-        .step-img:hover { transform: scale(1.02); border-color: var(--accent); }
+        .img-item:hover { transform: scale(1.03); border-color: var(--accent); }
 
-        .loading { display: none; text-align: center; padding: 40px; color: var(--accent); font-weight: bold; }
-        
-        /* 响应式调整 */
-        @media (max-width: 400px) {
-            .step-images { grid-template-columns: 1fr; }
-            .step-img { height: 180px; }
+        @media (max-width: 400px) { 
+            .img-grid { grid-template-columns: 1fr; } 
+            .img-item { height: 180px; } 
         }
+
+        .loading { display: none; text-align: center; color: var(--accent); padding: 50px; font-weight: bold; letter-spacing: 1px; }
+        
+        .back-nav { 
+            background: none; 
+            border: 1px solid #444; 
+            color: #888; 
+            width: 100%; 
+            padding: 15px; 
+            border-radius: 18px; 
+            margin-top: 20px; 
+            cursor: pointer; 
+            font-size: 0.85rem; 
+            transition: background 0.2s;
+        }
+        .back-nav:hover { background: rgba(255,255,255,0.05); color: #fff; }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>LUEN ORDER CENTER</h1>
-            <p>Real-time Production & Logistics Tracking</p>
-        </header>
-        
-        <!-- 初始搜索视图 -->
-        <div id="searchView" class="search-box">
-            <p>Please enter your Order ID to continue</p>
-            <input type="text" id="orderInput" placeholder="Order Number" spellcheck="false">
-            <button class="btn-search" id="searchBtn">TRACK PROGRESS</button>
-            <p style="font-size: 0.7rem; color: #666; margin-top: 20px;">* Your privacy is protected. Only matching ID can view the status.</p>
+        <!-- 搜索输入界面 -->
+        <div id="searchView" class="search-area">
+            <h1>LUEN CENTER</h1>
+            <p>Production Milestone Real-time Tracking</p>
+            <input type="text" id="orderInput" placeholder="ENTER ORDER NUMBER" spellcheck="false">
+            <button class="btn" id="searchBtn">TRACK PROGRESS</button>
+            <p style="font-size: 0.7rem; color: #555; margin-top: 25px; margin-bottom: 0;">Verified Data Securely Transmitted from Factory</p>
         </div>
 
-        <div id="loading" class="loading">⚡ Accessing LUEN Database...</div>
+        <div id="loading" class="loading">⚡ ACCESSING SECURE DATABASE...</div>
 
-        <!-- 订单追踪详情视图 -->
+        <!-- 追踪结果详情界面 -->
         <div id="trackingView">
-            <button class="back-btn" onclick="location.reload()">← New Search</button>
-            <div id="stepsContainer"></div>
+            <h2 class="header-title">MILESTONES ACHIEVED</h2>
+            <div id="orderIdLabel" style="text-align:center; color:#888; font-size:0.75rem; margin-top:-25px; margin-bottom:35px; font-family:monospace;"></div>
+            <div class="timeline" id="milestoneList"></div>
+            <button class="back-nav" onclick="location.reload()">← START NEW SEARCH</button>
         </div>
     </div>
 
     <script>
-        const NEW_GAS_URL = "https://script.google.com/macros/s/AKfycbxFx0eO3_QXxVUGjSrKkaaHyszIWNA68pwVNAfI6jjc8hE_3nDrg4FGSmrGz2vbm8d6mg/exec"; 
+        // --- 核心配置：对齐您最新的后端 URL ---
+        const TRACK_GAS_URL = "https://script.google.com/macros/s/AKfycbzKzwNtJDhWOaUr72tOPmSPFV9KDIppreasAcS6hx3pVElJi9FLv2kBX_hdxaC7pMJZRg/exec";
 
         const searchBtn = document.getElementById('searchBtn');
         const orderInput = document.getElementById('orderInput');
-        const searchView = document.getElementById('searchView');
-        const trackingView = document.getElementById('trackingView');
-        const loading = document.getElementById('loading');
-        const stepsContainer = document.getElementById('stepsContainer');
+        const milestoneList = document.getElementById('milestoneList');
 
-        searchBtn.onclick = async () => {
-            const id = orderInput.value.trim();
-            if(!id) return;
-
-            searchView.style.display = 'none';
-            loading.style.display = 'block';
-
-            try {
-                // 发起请求到新表格的后台
-                const resp = await fetch(`${NEW_GAS_URL}?id=${encodeURIComponent(id)}`);
-                const data = await resp.json();
-                
-                if (data.length === 0) {
-                    alert("Order ID not found. Please verify your number.");
-                    location.reload();
-                    return;
-                }
-
-                // 渲染结果
-                renderSteps(data);
-                loading.style.display = 'none';
-                trackingView.style.display = 'block';
-            } catch (e) {
-                console.error(e);
-                alert("Connection Error. Please try again later.");
-                location.reload();
-            }
-        };
-
-        function renderSteps(steps) {
-            // 将数据按表格里的顺序渲染，如果是时间轴建议在表格里按时间先后排列
-            stepsContainer.innerHTML = steps.map(s => `
-                <div class="step">
-                    <div class="step-header">
-                        <div class="step-title">${s.dimension}</div>
-                        <div class="step-status">${s.status}</div>
-                    </div>
-                    <div class="step-time">Update: ${formatDate(s.time)}</div>
-                    <div class="step-desc">${s.desc || 'No detailed description available.'}</div>
-                    <div class="step-images">
-                        ${s.img1 ? `<img src="${s.img1}" class="step-img" onclick="window.open('${s.img1}')" title="Click to view full size">` : ''}
-                        ${s.img2 ? `<img src="${s.img2}" class="step-img" onclick="window.open('${s.img2}')" title="Click to view full size">` : ''}
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        function formatDate(dateStr) {
-            if (!dateStr) return 'TBA';
-            try {
-                const d = new Date(dateStr);
-                return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-            } catch(e) {
-                return dateStr;
-            }
-        }
-
-        // 支持回车搜索
+        // 支持回车键搜索
         orderInput.addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 event.preventDefault();
                 searchBtn.click();
             }
         });
+
+        searchBtn.onclick = async () => {
+            const id = orderInput.value.trim();
+            if(!id) return;
+
+            document.getElementById('searchView').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            try {
+                // 向后台请求订单数据
+                const response = await fetch(`${TRACK_GAS_URL}?id=${encodeURIComponent(id)}`);
+                const data = await response.json();
+
+                if (!data || data.length === 0) {
+                    alert("Order ID not found. Please double check the number provided by your manager.");
+                    location.reload();
+                    return;
+                }
+
+                // 渲染里程碑卡片
+                milestoneList.innerHTML = data.map(m => `
+                    <div class="milestone-card ${m.status === 'Reached' || m.status === '已达成' ? 'reached' : ''}">
+                        <div class="date-badge">${formatDate(m.date)}</div>
+                        <div class="m-title">
+                            ${m.milestone}
+                            <span class="m-status">${m.status}</span>
+                        </div>
+                        <div class="m-desc">${m.desc || ''}</div>
+                        <div class="img-grid">
+                            ${m.img1 ? `<img src="${m.img1}" class="img-item" onclick="window.open('${m.img1}')" title="Click to enlarge">` : ''}
+                            ${m.img2 ? `<img src="${m.img2}" class="img-item" onclick="window.open('${m.img2}')" title="Click to enlarge">` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('orderIdLabel').innerText = "TRACKING ID: " + id;
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('trackingView').style.display = 'block';
+            } catch (e) {
+                console.error(e);
+                alert("Connection error. Please try again later.");
+                location.reload();
+            }
+        };
+
+        // 日期美化函数
+        function formatDate(raw) {
+            if (!raw || raw === 'TBA') return 'TBA';
+            const d = new Date(raw);
+            // 如果转换成功，显示为 "Aug 13, 2026" 格式
+            return isNaN(d) ? raw : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
     </script>
 </body>
 </html>
