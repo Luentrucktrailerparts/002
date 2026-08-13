@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUEN - Link Generator</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: linear-gradient(145deg, #1a0b2e 0%, #2d1b4e 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Inter', -apple-system, sans-serif;
+      padding: 20px;
+    }
+    .admin-panel {
+      background: rgba(255, 241, 208, 0.1);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 48px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 30px 50px rgba(0, 0, 0, 0.7), inset 0 2px 8px rgba(255, 215, 150, 0.5);
+      border: 1px solid rgba(255, 200, 100, 0.25);
+    }
+    h1 {
+      color: #ffde9e;
+      font-size: 1.8rem;
+      letter-spacing: 2px;
+      margin-bottom: 10px;
+      text-shadow: 0 4px 10px #b76e2e;
+    }
+    .subtitle {
+      color: #ccc2a0;
+      font-size: 0.85rem;
+      margin-bottom: 30px;
+    }
+    .btn-generate {
+      background: radial-gradient(circle at 30% 30%, #f9b84a, #c46f1e);
+      color: #2d1407;
+      border: 2px solid #ffb347;
+      font-size: 1.2rem;
+      font-weight: 700;
+      padding: 15px 40px;
+      border-radius: 50px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      transition: all 0.15s;
+      box-shadow: 0 10px 0 #6b3a14, 0 10px 25px black;
+      font-family: inherit;
+    }
+    .btn-generate:active {
+      transform: translateY(4px);
+      box-shadow: 0 5px 0 #5a2d0e, 0 12px 20px black;
+    }
+    .link-box {
+      background: rgba(10, 5, 20, 0.75);
+      border: 1px solid #e4a54b;
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 30px;
+      text-align: left;
+      display: none;
+    }
+    .link-box label {
+      color: #deb887;
+      font-size: 0.8rem;
+    }
+    .generated-link {
+      color: #FFD966;
+      font-size: 0.9rem;
+      word-break: break-all;
+      background: rgba(0,0,0,0.5);
+      padding: 12px;
+      border-radius: 8px;
+      margin: 10px 0;
+      user-select: all;
+      font-family: 'Courier New', monospace;
+    }
+    .btn-copy {
+      background: rgba(255, 200, 100, 0.2);
+      color: #ffe4b5;
+      border: 1px solid rgba(243, 179, 75, 0.5);
+      padding: 8px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-family: inherit;
+    }
+    .btn-copy:hover {
+      background: rgba(255, 200, 100, 0.3);
+    }
+    .copied-msg {
+      color: #8bc34a;
+      font-size: 0.8rem;
+      margin-left: 10px;
+      display: none;
+    }
+    .send-status {
+      font-size: 0.75rem;
+      margin-top: 8px;
+      min-height: 18px;
+      color: #8bc34a;
+    }
+    .history {
+      margin-top: 30px;
+      text-align: left;
+      max-height: 300px;
+      overflow-y: auto;
+      background: rgba(10, 5, 20, 0.75);
+      border: 1px solid #e4a54b;
+      border-radius: 16px;
+      padding: 15px;
+    }
+    .history h3 {
+      color: #deb887;
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+    }
+    .history-item {
+      color: #ccc2a0;
+      font-size: 0.75rem;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .history-item .code {
+      color: #FFD966;
+      font-family: 'Courier New', monospace;
+    }
+    .clear-btn {
+      background: transparent;
+      border: 1px solid #f44336;
+      color: #f44336;
+      padding: 2px 8px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.65rem;
+      margin-top: 10px;
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-panel">
+    <h1>🏆 LUEN Link Generator</h1>
+    <div class="subtitle">Generate unique one-time links for customers</div>
+    
+    <button class="btn-generate" onclick="generateLink()">🔮 Generate New Link</button>
+    
+    <div class="link-box" id="linkBox">
+      <label>▼ Copy this link and send to customer:</label>
+      <div class="generated-link" id="generatedLink"></div>
+      <button class="btn-copy" onclick="copyLink()">📋 Copy</button>
+      <span class="copied-msg" id="copiedMsg">Copied!</span>
+      <div id="sendStatus" class="send-status"></div>
+    </div>
+
+    <div class="history">
+      <h3>📋 Link History</h3>
+      <div id="historyList">
+        <div style="color:#888;">No links generated yet</div>
+      </div>
+      <button class="clear-btn" onclick="clearHistory()">Clear History</button>
+    </div>
+  </div>
+
+  <script>
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyBauVTzazgudk0zyr3uke2SegXhCYRm__Q6KnYJvWlyfnI7iCNRD3AXogzlnJFAas/exec";
+    const BASE_URL = "https://luentrucktrailerparts.github.io/002/wheel.html?code=";
+    const STORAGE_KEY = 'luen_wheel_links_002';
+
+    function generateCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let code = '';
+      for (let i = 0; i < 10; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return code;
+    }
+
+    function getLinks() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    function saveLinks(links) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+    }
+
+    async function generateLink() {
+      const code = generateCode();
+      const link = BASE_URL + code;
+      
+      document.getElementById('sendStatus').textContent = '⏳ Syncing to Google Sheets...';
+      
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'generate', linkCode: code })
+        });
+        document.getElementById('sendStatus').textContent = '✅ Synced';
+      } catch(e) {
+        document.getElementById('sendStatus').textContent = '⚠️ Sync failed';
+      }
+      
+      const links = getLinks();
+      links.push({ code: code, createdAt: new Date().toLocaleString() });
+      saveLinks(links);
+      
+      document.getElementById('generatedLink').textContent = link;
+      document.getElementById('linkBox').style.display = 'block';
+      document.getElementById('copiedMsg').style.display = 'none';
+      document.getElementById('generatedLink').scrollIntoView({ behavior: 'smooth' });
+      
+      renderHistory();
+      copyLink();
+    }
+
+    function copyLink() {
+      const linkText = document.getElementById('generatedLink').textContent;
+      navigator.clipboard.writeText(linkText).then(() => {
+        document.getElementById('copiedMsg').style.display = 'inline';
+        setTimeout(() => {
+          document.getElementById('copiedMsg').style.display = 'none';
+        }, 2000);
+      });
+    }
+
+    function renderHistory() {
+      const links = getLinks();
+      const historyList = document.getElementById('historyList');
+      if (links.length === 0) {
+        historyList.innerHTML = '<div style="color:#888;">No links generated yet</div>';
+        return;
+      }
+      historyList.innerHTML = links.slice().reverse().map((link) => {
+        const displayCode = link.code.substring(0, 6) + '...';
+        return `
+          <div class="history-item">
+            <span class="code">${displayCode}</span>
+            <span>${link.createdAt}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function clearHistory() {
+      if (confirm('Clear local history?')) {
+        localStorage.removeItem(STORAGE_KEY);
+        renderHistory();
+        document.getElementById('linkBox').style.display = 'none';
+      }
+    }
+
+    renderHistory();
+  </script>
+</body>
+</html>
