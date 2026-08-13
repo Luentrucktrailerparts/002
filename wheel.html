@@ -225,13 +225,6 @@
       min-height: 18px;
       color: #8bc34a;
     }
-    .checking-notice {
-      display: none;
-      text-align: center;
-      padding: 50px 20px;
-      color: #FFD966;
-      font-size: 1.2rem;
-    }
     .used-notice {
       display: none;
       text-align: center;
@@ -250,9 +243,7 @@
   </style>
 </head>
 <body>
-  <div class="checking-notice" id="checkingNotice">⏳ Verifying link...</div>
-
-  <div class="container" id="mainContainer" style="display:none;">
+  <div class="container" id="mainContainer">
     <h1>🏆 LUEN September Sale</h1>
     <div class="tagline">Trailers · Parts · Used Trucks</div>
     <div class="sub-title">✨ Spin the Wheel for an Instant Surprise ✨</div>
@@ -350,7 +341,6 @@
       const closeModalBtn = document.getElementById('closeModalBtn');
       const mainContainer = document.getElementById('mainContainer');
       const usedNotice = document.getElementById('usedNotice');
-      const checkingNotice = document.getElementById('checkingNotice');
 
       let currentRotation = 0;
       let isSpinning = false;
@@ -360,32 +350,29 @@
       let targetRotation = 0;
       let startRotation = 0;
       let hasSpun = false;
+      let linkValid = true;
 
-      async function checkLinkValidity() {
+      // 页面立即显示转盘，后台静默验证
+      initializeWheel();
+      checkLinkInBackground();
+
+      function checkLinkInBackground() {
         if (!linkCode) {
-          showUsedNotice();
+          lockWheel();
           return;
         }
-        checkingNotice.style.display = 'block';
-        try {
-          await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'check', linkCode: linkCode })
-          });
-          checkingNotice.style.display = 'none';
-          mainContainer.style.display = 'flex';
-          initializeWheel();
-        } catch(e) {
-          checkingNotice.style.display = 'none';
-          mainContainer.style.display = 'flex';
-          initializeWheel();
-        }
+        fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'check', linkCode: linkCode })
+        }).catch(() => {
+          // 网络问题暂时放行
+        });
       }
 
-      function showUsedNotice() {
-        checkingNotice.style.display = 'none';
+      function lockWheel() {
+        linkValid = false;
         mainContainer.style.display = 'none';
         usedNotice.style.display = 'block';
       }
@@ -630,8 +617,6 @@
       window.addEventListener('resize', function() {
         drawWheel(currentRotation);
       });
-
-      checkLinkValidity();
 
     })();
   </script>
