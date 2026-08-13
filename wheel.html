@@ -303,7 +303,7 @@
 
   <script>
     (function() {
-      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyBauVTzazgudk0zyr3uke2SegXhCYRm__Q6KnYJvWlyfnI7iCNRD3AXogzlnJFAas/exec";
+      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxv3Q025QCQX2hT-RSzhbuw7lmSZDG-mfrEOzrf8GT8rRcxSj-RnR2dSRBZ6M_ZOsKH/exec";
       
       const urlParams = new URLSearchParams(window.location.search);
       const linkCode = urlParams.get('code');
@@ -350,29 +350,34 @@
       let targetRotation = 0;
       let startRotation = 0;
       let hasSpun = false;
-      let linkValid = true;
+      let canSpin = false;
 
-      // 页面立即显示转盘，后台静默验证
-      initializeWheel();
-      checkLinkInBackground();
+      // 页面加载时先验证链接
+      verifyLink();
 
-      function checkLinkInBackground() {
+      async function verifyLink() {
         if (!linkCode) {
-          lockWheel();
+          showUsedNotice();
           return;
         }
-        fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'check', linkCode: linkCode })
-        }).catch(() => {
-          // 网络问题暂时放行
-        });
+
+        try {
+          const response = await fetch(`${GOOGLE_SCRIPT_URL}?code=${linkCode}`);
+          const result = await response.json();
+          
+          if (result.valid === true) {
+            canSpin = true;
+            initializeWheel();
+          } else {
+            showUsedNotice();
+          }
+        } catch(e) {
+          // 网络错误也锁死，不给人机会
+          showUsedNotice();
+        }
       }
 
-      function lockWheel() {
-        linkValid = false;
+      function showUsedNotice() {
         mainContainer.style.display = 'none';
         usedNotice.style.display = 'block';
       }
@@ -407,41 +412,56 @@
         return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
       }
 
-      function sendToGoogleSheet(prize, code, timestamp, linkCodeParam) {
+      async function sendToGoogleSheet(prize, code, timestamp) {
         sendStatus.textContent = '⏳ Recording...';
         modalSendStatus.textContent = '⏳ Recording...';
-        fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'use',
-            timestamp: timestamp,
-            prize: prize.desc,
-            code: code,
-            linkCode: linkCodeParam
-          })
-        })
-        .then(() => {
-          sendStatus.textContent = '✅ Recorded';
-          modalSendStatus.textContent = '✅ Recorded';
-        })
-        .catch(() => {
-          sendStatus.textContent = '⚠️ Network issue';
-          modalSendStatus.textContent = '⚠️ Network issue';
-        });
+        
+        try {
+          const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'use',
+              timestamp: timestamp,
+              prize: prize.desc,
+              code: code,
+              linkCode: linkCode
+            })
+          });
+          const result = await response.json();
+          
+          if (result.success === true) {
+            sendStatus.textContent = '✅ Recorded';
+            modalSendStatus.textContent = '✅ Recorded';
+            return true;
+          } else {
+            sendStatus.textContent = '❌ Already used';
+            modalSendStatus.textContent = '❌ Already used';
+            return false;
+          }
+        } catch(e) {
+          sendStatus.textContent = '⚠️ Network error';
+          modalSendStatus.textContent = '⚠️ Network error';
+          return false;
+        }
       }
 
-      function showWinModal(prize, code, timestamp) {
-        modalPrizeName.textContent = prize.desc;
-        modalCode.textContent = code;
-        modalSendStatus.textContent = '';
-        winModal.classList.add('active');
-        sendToGoogleSheet(prize, code, timestamp, linkCode);
+      async function showWinModal(prize, code, timestamp) {
+        const success = await sendToGoogleSheet(prize, code, timestamp);
+        
+        if (success) {
+          modalPrizeName.textContent = prize.desc;
+          modalCode.textContent = code;
+          winModal.classList.add('active');
+        } else {
+          alert('This link has already been used. Please contact your sales representative.');
+          showUsedNotice();
+        }
       }
 
       closeModalBtn.addEventListener('click', function() {
         winModal.classList.remove('active');
+        showUsedNotice();
       });
 
       function getPrizeIndexByRotation(rotationRad) {
@@ -573,11 +593,13 @@
       }
 
       function startSpin() {
-        if (isSpinning) return;
-        if (hasSpun) {
-          alert("Already participated!");
+        if (!canSpin) {
+          alert("Verification failed. This link may already be used.");
           return;
         }
+        if (isSpinning) return;
+        if (hasSpun) return;
+
         const targetIndex = getWeightedRandomIndex();
         const randomOffsetInSegment = (Math.random() * 0.6 + 0.2) * ANGLE_STEP;
         const targetAngleInWheel = targetIndex * ANGLE_STEP + randomOffsetInSegment;
@@ -599,7 +621,7 @@
 
       spinButton.addEventListener('click', startSpin);
       canvas.addEventListener('click', function() {
-        if (!isSpinning && !hasSpun) startSpin();
+        if (canSpin && !isSpinning && !hasSpun) startSpin();
       });
 
       function initializeWheel() {

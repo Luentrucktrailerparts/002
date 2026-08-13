@@ -100,12 +100,6 @@
       margin-left: 10px;
       display: none;
     }
-    .send-status {
-      font-size: 0.75rem;
-      margin-top: 8px;
-      min-height: 18px;
-      color: #8bc34a;
-    }
     .history {
       margin-top: 30px;
       text-align: left;
@@ -160,11 +154,10 @@
       <div class="generated-link" id="generatedLink"></div>
       <button class="btn-copy" onclick="copyLink()">📋 Copy</button>
       <span class="copied-msg" id="copiedMsg">Copied!</span>
-      <div id="sendStatus" class="send-status"></div>
     </div>
 
     <div class="history">
-      <h3>📋 Link History</h3>
+      <h3>📋 Link History (Local)</h3>
       <div id="historyList">
         <div style="color:#888;">No links generated yet</div>
       </div>
@@ -173,7 +166,6 @@
   </div>
 
   <script>
-    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzyBauVTzazgudk0zyr3uke2SegXhCYRm__Q6KnYJvWlyfnI7iCNRD3AXogzlnJFAas/exec";
     const BASE_URL = "https://luentrucktrailerparts.github.io/002/wheel.html?code=";
     const STORAGE_KEY = 'luen_wheel_links_002';
 
@@ -195,23 +187,9 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
     }
 
-    async function generateLink() {
+    function generateLink() {
       const code = generateCode();
       const link = BASE_URL + code;
-      
-      document.getElementById('sendStatus').textContent = '⏳ Syncing to Google Sheets...';
-      
-      try {
-        await fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'generate', linkCode: code })
-        });
-        document.getElementById('sendStatus').textContent = '✅ Synced';
-      } catch(e) {
-        document.getElementById('sendStatus').textContent = '⚠️ Sync failed';
-      }
       
       const links = getLinks();
       links.push({ code: code, createdAt: new Date().toLocaleString() });
