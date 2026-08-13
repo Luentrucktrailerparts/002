@@ -675,4 +675,99 @@
 
       function spinAnimation(now) {
         if (!isSpinning) return;
-        const elapsed = now -
+        const elapsed = now - spinStartTime;
+        let progress = Math.min(elapsed / SPIN_DURATION, 1.0);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        currentRotation = startRotation + (targetRotation - startRotation) * easeOut;
+        drawWheel(currentRotation);
+        updatePrizeDisplayByRotation(currentRotation);
+
+        if (progress >= 1.0) {
+          isSpinning = false;
+          if (animFrame) cancelAnimationFrame(animFrame);
+          animFrame = null;
+          currentRotation = targetRotation % (2 * Math.PI);
+          drawWheel(currentRotation);
+
+          const finalIdx = getPrizeIndexByRotation(currentRotation);
+          const finalPrize = PRIZES[finalIdx];
+          const verificationCode = generateVerificationCode();
+          const timestamp = getTimestamp();
+
+          prizeDisplay.textContent = finalPrize.desc;
+          verificationSection.style.display = 'block';
+          verificationCodeEl.textContent = verificationCode;
+
+          spinButton.disabled = true;
+          hasSpun = true;
+          spinButton.textContent = "🎉 Completed 🎉";
+
+          showWinModal(finalPrize, verificationCode, timestamp);
+        } else {
+          animFrame = requestAnimationFrame(spinAnimation);
+        }
+      }
+
+      function startSpin() {
+        if (isSpinning) {
+          alert("The wheel is spinning, please wait...");
+          return;
+        }
+        if (hasSpun) {
+          alert("You have already participated! Each link may be used only once.");
+          return;
+        }
+
+        const targetIndex = getWeightedRandomIndex();
+        const randomOffsetInSegment = (Math.random() * 0.6 + 0.2) * ANGLE_STEP;
+        const targetAngleInWheel = targetIndex * ANGLE_STEP + randomOffsetInSegment;
+        const pointerAngle = -Math.PI / 2;
+        let desiredRotation = pointerAngle - targetAngleInWheel;
+        desiredRotation = ((desiredRotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        const extraTurns = (Math.floor(Math.random() * 5) + 5) * 2 * Math.PI;
+        targetRotation = desiredRotation + extraTurns;
+        startRotation = currentRotation;
+        isSpinning = true;
+        spinStartTime = performance.now();
+        spinButton.disabled = true;
+        spinButton.textContent = "🌀 Spinning...";
+        verificationSection.style.display = 'none';
+        sendStatus.textContent = '';
+        if (animFrame) cancelAnimationFrame(animFrame);
+        animFrame = requestAnimationFrame(spinAnimation);
+      }
+
+      spinButton.addEventListener('click', startSpin);
+
+      canvas.addEventListener('click', function() {
+        if (!isSpinning && !hasSpun) {
+          startSpin();
+        } else if (hasSpun) {
+          alert("You have already participated! Each link may be used only once.");
+        } else if (isSpinning) {
+          alert("The wheel is spinning, please wait...");
+        }
+      });
+
+      function initializeWheel() {
+        currentRotation = Math.random() * 2 * Math.PI;
+        drawWheel(currentRotation);
+        updatePrizeDisplayByRotation(currentRotation);
+        verificationSection.style.display = 'none';
+        sendStatus.textContent = '';
+        spinButton.disabled = false;
+        spinButton.textContent = "🔮 SPIN 🎁";
+        hasSpun = false;
+        isSpinning = false;
+      }
+
+      initializeWheel();
+
+      window.addEventListener('resize', function() {
+        drawWheel(currentRotation);
+      });
+
+    })();
+  </script>
+</body>
+</html>
