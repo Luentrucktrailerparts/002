@@ -243,7 +243,7 @@
   </style>
 </head>
 <body>
-  <div class="container" id="mainContainer">
+  <div class="container" id="mainContainer" style="display:none;">
     <h1>🏆 LUEN September Sale</h1>
     <div class="tagline">Trailers · Parts · Used Trucks</div>
     <div class="sub-title">✨ Spin the Wheel for an Instant Surprise ✨</div>
@@ -352,7 +352,7 @@
       let hasSpun = false;
       let canSpin = false;
 
-      // 页面加载时先验证链接
+      // 页面加载立即开始验证，但先隐藏转盘
       verifyLink();
 
       async function verifyLink() {
@@ -367,12 +367,13 @@
           
           if (result.valid === true) {
             canSpin = true;
+            mainContainer.style.display = 'flex';
             initializeWheel();
           } else {
             showUsedNotice();
           }
         } catch(e) {
-          // 网络错误也锁死，不给人机会
+          // 网络错误，显示锁定页面更安全
           showUsedNotice();
         }
       }
@@ -454,7 +455,7 @@
           modalCode.textContent = code;
           winModal.classList.add('active');
         } else {
-          alert('This link has already been used. Please contact your sales representative.');
+          alert('This link has already been used.');
           showUsedNotice();
         }
       }
